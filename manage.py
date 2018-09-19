@@ -26,6 +26,9 @@ import numpy as np
 from donkeycar.parts.throttle_filter import ThrottleFilter
 from donkeycar.parts.behavior import BehaviorPart
 
+# custom parts 
+import preprocess
+
 def drive(cfg, model_path=None, use_joystick=False, model_type=None, camera_type='single'):
     '''
     Construct a working robotic vehicle from many parts.
@@ -103,6 +106,14 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None, camera_type
             
         V.add(cam, outputs=['cam/image_array'], threaded=True)
         
+
+    prep = preprocess.Preprocess()
+    
+    V.add(prep,
+          inputs=['cam/image_array'],
+          outputs=['process/image_array']
+          threaded=True)
+
     if use_joystick or cfg.USE_JOYSTICK_AS_DEFAULT:
         #modify max_throttle closer to 1.0 to have more power
         #modify steering_scale lower than 1.0 to have less responsive steering
@@ -130,7 +141,7 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None, camera_type
 
     
     V.add(ctr, 
-          inputs=['cam/image_array'],
+          inputs=['process/image_array'],
           outputs=['user/angle', 'user/throttle', 'user/mode', 'recording'],
           threaded=True)
 
